@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class EndpointDescriptionCollector {
 
     private final RequestMappingHandlerMapping handlerMapping;
-    private final Map<String, EndpointMetadata> metadataByPath = new ConcurrentHashMap<>();
+    private final Map<String, List<EndpointMetadata>> metadataByPath = new ConcurrentHashMap<>();
 
     public EndpointDescriptionCollector(RequestMappingHandlerMapping handlerMapping) {
         this.handlerMapping = handlerMapping;
@@ -54,20 +54,21 @@ public class EndpointDescriptionCollector {
             String description = annotation.value();
 
             for (String pattern : patterns) {
-                metadataByPath.put(pattern, new EndpointMetadata(
-                        httpMethods.isEmpty() ? Set.of("ALL") : httpMethods,
-                        pattern,
-                        description
-                ));
+                metadataByPath.computeIfAbsent(pattern, k -> new ArrayList<>())
+                        .add(new EndpointMetadata(
+                                httpMethods.isEmpty() ? Set.of("ALL") : httpMethods,
+                                pattern,
+                                description
+                        ));
             }
         }
     }
 
-    public EndpointMetadata getMetadata(String path) {
+    public List<EndpointMetadata> getMetadata(String path) {
         return metadataByPath.get(path);
     }
 
-    public List<EndpointMetadata> getAllMetadata() {
-        return Collections.unmodifiableList(new ArrayList<>(metadataByPath.values()));
+    public Map<String, List<EndpointMetadata>> getAllMetadata() {
+        return Collections.unmodifiableMap(metadataByPath);
     }
 }
