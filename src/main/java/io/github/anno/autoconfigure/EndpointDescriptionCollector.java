@@ -52,14 +52,11 @@ public class EndpointDescriptionCollector {
                     .collect(Collectors.toSet());
 
             String description = annotation.value();
+            String method = httpMethods.isEmpty() ? "ALL" : httpMethods.iterator().next();
 
             for (String pattern : patterns) {
                 metadataByPath.computeIfAbsent(pattern, k -> new ArrayList<>())
-                        .add(new EndpointMetadata(
-                                httpMethods.isEmpty() ? Set.of("ALL") : httpMethods,
-                                pattern,
-                                description
-                        ));
+                        .add(new EndpointMetadata(method, description));
             }
         }
     }

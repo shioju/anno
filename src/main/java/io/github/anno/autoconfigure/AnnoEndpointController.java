@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -43,7 +42,7 @@ public class AnnoEndpointController {
             Map<String, List<EndpointSummary>> summary = new LinkedHashMap<>();
             collector.getAllMetadata().forEach((path, entries) ->
                 summary.put(path, entries.stream()
-                        .map(m -> new EndpointSummary(m.methods(), m.description()))
+                        .map(m -> new EndpointSummary(m.method(), m.description()))
                         .collect(Collectors.toList()))
             );
             return ResponseEntity.ok(summary);
@@ -62,7 +61,7 @@ public class AnnoEndpointController {
         if (methodFilter != null && !methodFilter.isBlank()) {
             String upper = methodFilter.toUpperCase();
             metadata = metadata.stream()
-                    .filter(m -> m.methods().contains(upper) || m.methods().contains("ALL"))
+                    .filter(m -> m.method().equals(upper) || m.method().equals("ALL"))
                     .collect(Collectors.toList());
             if (metadata.isEmpty()) {
                 return ResponseEntity.notFound().build();
@@ -85,5 +84,5 @@ public class AnnoEndpointController {
         return basePath;
     }
 
-    private record EndpointSummary(Set<String> methods, String description) {}
+    private record EndpointSummary(String method, String description) {}
 }
