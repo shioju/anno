@@ -49,11 +49,10 @@ GET /anno/user
 ```
 
 ```json
-{
-  "methods": ["GET"],
-  "path": "/user",
-  "description": "Returns the current user profile"
-}
+[
+  {"method": "GET", "description": "Returns the current user profile"},
+  {"method": "POST", "description": "Creates a new user"}
+]
 ```
 
 **List all annotated endpoints:**
@@ -63,18 +62,12 @@ GET /anno
 ```
 
 ```json
-[
-  {
-    "methods": ["GET"],
-    "path": "/user",
-    "description": "Returns the current user profile"
-  },
-  {
-    "methods": ["POST"],
-    "path": "/user",
-    "description": "Creates a new user"
-  }
-]
+{
+  "/user": [
+    {"method": "GET", "description": "Returns the current user profile"},
+    {"method": "POST", "description": "Creates a new user"}
+  ]
+}
 ```
 
 Unannotated endpoints return `404` from the `/anno` path.

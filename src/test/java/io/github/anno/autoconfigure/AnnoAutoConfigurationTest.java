@@ -25,7 +25,7 @@ class AnnoAutoConfigurationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[*].path", hasItems("/user")))
+                .andExpect(jsonPath("$[*].method", hasItems("GET", "POST")))
                 .andExpect(jsonPath("$[*].description",
                         hasItems("Returns the current user profile", "Creates a new user")));
     }
