@@ -5,7 +5,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Serves collected {@link EndpointDescription} metadata.
@@ -13,6 +17,7 @@ import java.util.List;
  * <ul>
  *   <li>{@code GET {basePath}} — returns ALL annotated endpoints</li>
  *   <li>{@code GET {basePath}/{path}} — returns metadata for a specific endpoint path</li>
+ *   <li>{@code GET {basePath}/{path}?method=GET} — filters to a specific HTTP method</li>
  * </ul>
  */
 @RestController
@@ -35,18 +40,35 @@ public class AnnoEndpointController {
         String targetPath = requestUri.substring(basePath.length());
 
         if (targetPath.isEmpty() || targetPath.equals("/")) {
-            List<EndpointMetadata> all = collector.getAllMetadata();
-            return ResponseEntity.ok(all);
+            Map<String, List<EndpointSummary>> summary = new LinkedHashMap<>();
+            collector.getAllMetadata().forEach((path, entries) ->
+                summary.put(path, entries.stream()
+                        .map(m -> new EndpointSummary(m.methods(), m.description()))
+                        .collect(Collectors.toList()))
+            );
+            return ResponseEntity.ok(summary);
         }
 
         if (!targetPath.startsWith("/")) {
             targetPath = "/" + targetPath;
         }
 
-        EndpointMetadata metadata = collector.getMetadata(targetPath);
+        List<EndpointMetadata> metadata = collector.getMetadata(targetPath);
         if (metadata == null) {
             return ResponseEntity.notFound().build();
         }
+
+        String methodFilter = request.getParameter("method");
+        if (methodFilter != null && !methodFilter.isBlank()) {
+            String upper = methodFilter.toUpperCase();
+            metadata = metadata.stream()
+                    .filter(m -> m.methods().contains(upper) || m.methods().contains("ALL"))
+                    .collect(Collectors.toList());
+            if (metadata.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+        }
+
         return ResponseEntity.ok(metadata);
     }
 
@@ -62,4 +84,6 @@ public class AnnoEndpointController {
         }
         return basePath;
     }
+
+    private record EndpointSummary(Set<String> methods, String description) {}
 }
