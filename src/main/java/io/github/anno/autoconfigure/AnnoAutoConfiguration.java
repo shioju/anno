@@ -1,5 +1,6 @@
 package io.github.anno.autoconfigure;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -16,7 +17,7 @@ public class AnnoAutoConfiguration {
 
     @Bean
     public EndpointDescriptionCollector endpointDescriptionCollector(
-            RequestMappingHandlerMapping handlerMapping) {
+            @Qualifier("requestMappingHandlerMapping") RequestMappingHandlerMapping handlerMapping) {
         EndpointDescriptionCollector collector =
                 new EndpointDescriptionCollector(handlerMapping);
         collector.collect();
