@@ -75,8 +75,8 @@ class AnnoAutoConfigurationTest {
     void shouldReturnPathParametersForParameterizedEndpoint() throws Exception {
         mockMvc.perform(get("/anno/user/123/project/456"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.pathParameters.user_id").value(123))
-                .andExpect(jsonPath("$.pathParameters.project_id").value(456))
+                .andExpect(jsonPath("$.pathParameters.user_id").value("123"))
+                .andExpect(jsonPath("$.pathParameters.project_id").value("456"))
                 .andExpect(jsonPath("$.endpoints[0].description").value("Returns a user project"))
                 .andExpect(jsonPath("$.endpoints[0].method").value("GET"));
     }

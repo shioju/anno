@@ -56,7 +56,7 @@ public class AnnoEndpointController {
         }
 
         List<EndpointMetadata> metadata = collector.getMetadata(targetPath);
-        Map<String, Object> pathParameters = Map.of();
+        Map<String, String> pathParameters = Map.of();
 
         if (metadata == null) {
             PathPatternParser parser = new PathPatternParser();
@@ -66,7 +66,7 @@ public class AnnoEndpointController {
                 PathPattern.PathMatchInfo matchInfo = pattern.matchAndExtract(pathContainer);
                 if (matchInfo != null) {
                     metadata = entry.getValue();
-                    pathParameters = convertPathVariables(matchInfo.getUriVariables());
+                    pathParameters = matchInfo.getUriVariables();
                     break;
                 }
             }
@@ -103,20 +103,7 @@ public class AnnoEndpointController {
         return basePath;
     }
 
-    private Map<String, Object> convertPathVariables(Map<String, String> vars) {
-        Map<String, Object> result = new LinkedHashMap<>();
-        for (Map.Entry<String, String> entry : vars.entrySet()) {
-            String value = entry.getValue();
-            try {
-                result.put(entry.getKey(), Long.parseLong(value));
-            } catch (NumberFormatException e) {
-                result.put(entry.getKey(), value);
-            }
-        }
-        return result;
-    }
-
     private record EndpointSummary(String method, String description) {}
 
-    private record EndpointResponse(Map<String, Object> pathParameters, List<EndpointMetadata> endpoints) {}
+    private record EndpointResponse(Map<String, String> pathParameters, List<EndpointMetadata> endpoints) {}
 }
