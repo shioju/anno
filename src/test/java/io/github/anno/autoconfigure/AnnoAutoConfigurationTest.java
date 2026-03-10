@@ -23,11 +23,12 @@ class AnnoAutoConfigurationTest {
     void shouldReturnMetadataForAnnotatedEndpoint() throws Exception {
         mockMvc.perform(get("/anno/user"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[*].method", hasItems("GET", "POST")))
-                .andExpect(jsonPath("$[*].description",
-                        hasItems("Returns the current user profile", "Creates a new user")));
+                .andExpect(jsonPath("$.endpoints").isArray())
+                .andExpect(jsonPath("$.endpoints.length()").value(2))
+                .andExpect(jsonPath("$.endpoints[*].method", hasItems("GET", "POST")))
+                .andExpect(jsonPath("$.endpoints[*].description",
+                        hasItems("Returns the current user profile", "Creates a new user")))
+                .andExpect(jsonPath("$.pathParameters").isEmpty());
     }
 
     @Test
@@ -51,9 +52,9 @@ class AnnoAutoConfigurationTest {
     void shouldFilterByMethodQueryParam() throws Exception {
         mockMvc.perform(get("/anno/user?method=POST"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].description").value("Creates a new user"));
+                .andExpect(jsonPath("$.endpoints").isArray())
+                .andExpect(jsonPath("$.endpoints.length()").value(1))
+                .andExpect(jsonPath("$.endpoints[0].description").value("Creates a new user"));
     }
 
     @Test
@@ -66,7 +67,17 @@ class AnnoAutoConfigurationTest {
     void shouldBeCaseInsensitiveMethodFilter() throws Exception {
         mockMvc.perform(get("/anno/user?method=get"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].description").value("Returns the current user profile"));
+                .andExpect(jsonPath("$.endpoints.length()").value(1))
+                .andExpect(jsonPath("$.endpoints[0].description").value("Returns the current user profile"));
+    }
+
+    @Test
+    void shouldReturnPathParametersForParameterizedEndpoint() throws Exception {
+        mockMvc.perform(get("/anno/user/123/project/456"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pathParameters.user_id").value("123"))
+                .andExpect(jsonPath("$.pathParameters.project_id").value("456"))
+                .andExpect(jsonPath("$.endpoints[0].description").value("Returns a user project"))
+                .andExpect(jsonPath("$.endpoints[0].method").value("GET"));
     }
 }

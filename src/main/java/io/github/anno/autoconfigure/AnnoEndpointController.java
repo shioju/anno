@@ -2,8 +2,11 @@ package io.github.anno.autoconfigure;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.PathContainer;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.pattern.PathPattern;
+import org.springframework.web.util.pattern.PathPatternParser;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -53,6 +56,22 @@ public class AnnoEndpointController {
         }
 
         List<EndpointMetadata> metadata = collector.getMetadata(targetPath);
+        Map<String, String> pathParameters = Map.of();
+
+        if (metadata == null) {
+            PathPatternParser parser = new PathPatternParser();
+            PathContainer pathContainer = PathContainer.parsePath(targetPath);
+            for (Map.Entry<String, List<EndpointMetadata>> entry : collector.getAllMetadata().entrySet()) {
+                PathPattern pattern = parser.parse(entry.getKey());
+                PathPattern.PathMatchInfo matchInfo = pattern.matchAndExtract(pathContainer);
+                if (matchInfo != null) {
+                    metadata = entry.getValue();
+                    pathParameters = matchInfo.getUriVariables();
+                    break;
+                }
+            }
+        }
+
         if (metadata == null) {
             return ResponseEntity.notFound().build();
         }
@@ -68,7 +87,7 @@ public class AnnoEndpointController {
             }
         }
 
-        return ResponseEntity.ok(metadata);
+        return ResponseEntity.ok(new EndpointResponse(pathParameters, metadata));
     }
 
     private String normalizeBasePath(String basePath) {
@@ -85,4 +104,6 @@ public class AnnoEndpointController {
     }
 
     private record EndpointSummary(String method, String description) {}
+
+    private record EndpointResponse(Map<String, String> pathParameters, List<EndpointMetadata> endpoints) {}
 }
