@@ -7,14 +7,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Place on a {@code @RequestMapping} handler method to attach a human-readable
- * description. The anno starter will discover it at startup and expose the
- * metadata at a configurable REST endpoint.
+ * Place on a {@code @RequestMapping} handler method to attach arbitrary
+ * key-value metadata. Each element must follow the {@code key=value} format.
+ * The anno starter will discover it at startup and expose the metadata at a
+ * configurable REST endpoint.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface EndpointDescription {
-    /** The description text for this endpoint. */
-    String value();
+    /** Key-value pairs in {@code "key=value"} format. */
+    String[] value();
 }

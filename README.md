@@ -1,10 +1,10 @@
 # anno-spring-boot-starter
 
-A Spring Boot starter that lets you annotate controller endpoints with descriptions and automatically exposes that metadata via a REST API.
+A Spring Boot starter that lets you annotate controller endpoints with arbitrary key-value metadata and automatically exposes it via a REST API.
 
 ## What it does
 
-1. You add `@EndpointDescription("...")` to any Spring MVC controller method
+1. You add `@EndpointDescription({"key=value", ...})` to any Spring MVC controller method
 2. At startup, the starter scans all registered handler methods for the annotation
 3. A new endpoint is automatically registered (default: `/anno/**`) that serves the collected metadata as JSON
 
@@ -22,19 +22,38 @@ A Spring Boot starter that lets you annotate controller endpoints with descripti
 
 ### Annotate your endpoints
 
+The annotation accepts an array of `"key=value"` strings, allowing you to attach any metadata you need:
+
 ```java
 @RestController
 public class UserController {
 
     @GetMapping("/user")
-    @EndpointDescription("Returns the current user profile")
+    @EndpointDescription({
+        "summary=Returns the current user profile",
+        "tags=users"
+    })
     public User getUser() {
         // ...
     }
 
     @PostMapping("/user")
-    @EndpointDescription("Creates a new user")
+    @EndpointDescription({
+        "summary=Creates a new user",
+        "tags=users"
+    })
     public User createUser(@RequestBody User user) {
+        // ...
+    }
+
+    @GetMapping("/user/{user_id}/project/{project_id}")
+    @EndpointDescription({
+        "summary=Returns a user project",
+        "tags=users,projects",
+        "deprecated=false"
+    })
+    public Project getUserProject(@PathVariable String user_id,
+                                  @PathVariable String project_id) {
         // ...
     }
 }
@@ -49,10 +68,50 @@ GET /anno/user
 ```
 
 ```json
-[
-  {"method": "GET", "description": "Returns the current user profile"},
-  {"method": "POST", "description": "Creates a new user"}
-]
+{
+  "pathParameters": {},
+  "endpoints": [
+    {"method": "GET", "attributes": {"summary": "Returns the current user profile", "tags": "users"}},
+    {"method": "POST", "attributes": {"summary": "Creates a new user", "tags": "users"}}
+  ]
+}
+```
+
+**Get metadata with path parameters:**
+
+```
+GET /anno/user/123/project/456
+```
+
+```json
+{
+  "pathParameters": {"user_id": "123", "project_id": "456"},
+  "endpoints": [
+    {
+      "method": "GET",
+      "attributes": {
+        "summary": "Returns a user project",
+        "tags": "users,projects",
+        "deprecated": "false"
+      }
+    }
+  ]
+}
+```
+
+**Filter by HTTP method:**
+
+```
+GET /anno/user?method=POST
+```
+
+```json
+{
+  "pathParameters": {},
+  "endpoints": [
+    {"method": "POST", "attributes": {"summary": "Creates a new user", "tags": "users"}}
+  ]
+}
 ```
 
 **List all annotated endpoints:**
@@ -64,8 +123,11 @@ GET /anno
 ```json
 {
   "/user": [
-    {"method": "GET", "description": "Returns the current user profile"},
-    {"method": "POST", "description": "Creates a new user"}
+    {"method": "GET", "attributes": {"summary": "Returns the current user profile", "tags": "users"}},
+    {"method": "POST", "attributes": {"summary": "Creates a new user", "tags": "users"}}
+  ],
+  "/user/{user_id}/project/{project_id}": [
+    {"method": "GET", "attributes": {"summary": "Returns a user project", "tags": "users,projects", "deprecated": "false"}}
   ]
 }
 ```
@@ -117,6 +179,8 @@ mvn test
 ```
 
 The test suite boots a minimal Spring application with a sample controller and verifies:
-- `GET /anno/user` returns the correct metadata for an annotated endpoint
-- `GET /anno` returns a list of all annotated endpoints
+- `GET /anno/user` returns the correct attributes for an annotated endpoint
+- `GET /anno` returns a list of all annotated endpoints with their attributes
+- `GET /anno/user/123/project/456` extracts path parameters and returns matching metadata
+- `GET /anno/user?method=POST` filters endpoints by HTTP method
 - `GET /anno/health` returns 404 for an unannotated endpoint
