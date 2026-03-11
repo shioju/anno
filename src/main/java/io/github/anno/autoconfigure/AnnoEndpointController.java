@@ -45,7 +45,7 @@ public class AnnoEndpointController {
             Map<String, List<EndpointSummary>> summary = new LinkedHashMap<>();
             collector.getAllMetadata().forEach((path, entries) ->
                 summary.put(path, entries.stream()
-                        .map(m -> new EndpointSummary(m.method(), m.description()))
+                        .map(m -> new EndpointSummary(m.method(), m.attributes()))
                         .collect(Collectors.toList()))
             );
             return ResponseEntity.ok(summary);
@@ -103,7 +103,7 @@ public class AnnoEndpointController {
         return basePath;
     }
 
-    private record EndpointSummary(String method, String description) {}
+    private record EndpointSummary(String method, Map<String, String> attributes) {}
 
     private record EndpointResponse(Map<String, String> pathParameters, List<EndpointMetadata> endpoints) {}
 }

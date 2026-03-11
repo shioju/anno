@@ -6,6 +6,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,12 +52,12 @@ public class EndpointDescriptionCollector {
                     .map(Enum::name)
                     .collect(Collectors.toSet());
 
-            String description = annotation.value();
+            Map<String, String> attributes = parseAttributes(annotation.value());
             String method = httpMethods.isEmpty() ? "ALL" : httpMethods.iterator().next();
 
             for (String pattern : patterns) {
                 metadataByPath.computeIfAbsent(pattern, k -> new ArrayList<>())
-                        .add(new EndpointMetadata(method, description));
+                        .add(new EndpointMetadata(method, attributes));
             }
         }
     }
@@ -67,5 +68,16 @@ public class EndpointDescriptionCollector {
 
     public Map<String, List<EndpointMetadata>> getAllMetadata() {
         return Collections.unmodifiableMap(metadataByPath);
+    }
+
+    private static Map<String, String> parseAttributes(String[] pairs) {
+        Map<String, String> attrs = new LinkedHashMap<>();
+        for (String pair : pairs) {
+            int eq = pair.indexOf('=');
+            if (eq > 0) {
+                attrs.put(pair.substring(0, eq).trim(), pair.substring(eq + 1).trim());
+            }
+        }
+        return Collections.unmodifiableMap(attrs);
     }
 }

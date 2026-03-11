@@ -26,7 +26,7 @@ class AnnoAutoConfigurationTest {
                 .andExpect(jsonPath("$.endpoints").isArray())
                 .andExpect(jsonPath("$.endpoints.length()").value(2))
                 .andExpect(jsonPath("$.endpoints[*].method", hasItems("GET", "POST")))
-                .andExpect(jsonPath("$.endpoints[*].description",
+                .andExpect(jsonPath("$.endpoints[*].attributes.summary",
                         hasItems("Returns the current user profile", "Creates a new user")))
                 .andExpect(jsonPath("$.pathParameters").isEmpty());
     }
@@ -37,7 +37,7 @@ class AnnoAutoConfigurationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$['/user']").isArray())
                 .andExpect(jsonPath("$['/user'].length()").value(2))
-                .andExpect(jsonPath("$['/user'][*].description",
+                .andExpect(jsonPath("$['/user'][*].attributes.summary",
                         hasItems("Returns the current user profile", "Creates a new user")))
                 .andExpect(jsonPath("$['/user'][0].path").doesNotExist());
     }
@@ -54,7 +54,7 @@ class AnnoAutoConfigurationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.endpoints").isArray())
                 .andExpect(jsonPath("$.endpoints.length()").value(1))
-                .andExpect(jsonPath("$.endpoints[0].description").value("Creates a new user"));
+                .andExpect(jsonPath("$.endpoints[0].attributes.summary").value("Creates a new user"));
     }
 
     @Test
@@ -68,7 +68,7 @@ class AnnoAutoConfigurationTest {
         mockMvc.perform(get("/anno/user?method=get"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.endpoints.length()").value(1))
-                .andExpect(jsonPath("$.endpoints[0].description").value("Returns the current user profile"));
+                .andExpect(jsonPath("$.endpoints[0].attributes.summary").value("Returns the current user profile"));
     }
 
     @Test
@@ -77,7 +77,9 @@ class AnnoAutoConfigurationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pathParameters.user_id").value("123"))
                 .andExpect(jsonPath("$.pathParameters.project_id").value("456"))
-                .andExpect(jsonPath("$.endpoints[0].description").value("Returns a user project"))
+                .andExpect(jsonPath("$.endpoints[0].attributes.summary").value("Returns a user project"))
+                .andExpect(jsonPath("$.endpoints[0].attributes.tags").value("users,projects"))
+                .andExpect(jsonPath("$.endpoints[0].attributes.deprecated").value("false"))
                 .andExpect(jsonPath("$.endpoints[0].method").value("GET"));
     }
 }

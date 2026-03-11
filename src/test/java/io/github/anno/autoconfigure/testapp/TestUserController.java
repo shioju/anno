@@ -10,19 +10,29 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestUserController {
 
     @GetMapping("/user")
-    @EndpointDescription("Returns the current user profile")
+    @EndpointDescription({
+            "summary=Returns the current user profile",
+            "tags=users"
+    })
     public String getUser() {
         return "test-user";
     }
 
     @PostMapping("/user")
-    @EndpointDescription("Creates a new user")
+    @EndpointDescription({
+            "summary=Creates a new user",
+            "tags=users"
+    })
     public String createUser() {
         return "created";
     }
 
     @GetMapping("/user/{user_id}/project/{project_id}")
-    @EndpointDescription("Returns a user project")
+    @EndpointDescription({
+            "summary=Returns a user project",
+            "tags=users,projects",
+            "deprecated=false"
+    })
     public String getUserProject(@PathVariable String user_id, @PathVariable String project_id) {
         return "project";
     }
