@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface ChangeAccessEndpoint {
+public @interface ChangeAccessAction {
     Condition condition() default Condition.ALWAYS;
     String resourceId();
     String actorId();

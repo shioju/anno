@@ -9,7 +9,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface UpdateEndpoint {
+public @interface GrantAccessAction {
     Condition condition() default Condition.ALWAYS;
     String resourceId();
+    String actorId();
+    String accessLevel();
 }
