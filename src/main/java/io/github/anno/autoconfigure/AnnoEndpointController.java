@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Serves collected {@link EndpointDescription} metadata.
+ * Serves collected endpoint metadata.
  *
  * <ul>
  *   <li>{@code GET {basePath}} — returns ALL annotated endpoints</li>
