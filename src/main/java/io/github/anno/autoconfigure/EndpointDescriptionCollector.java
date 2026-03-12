@@ -4,9 +4,9 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 
 /**
  * Scans all registered handler methods via {@link RequestMappingHandlerMapping},
- * finds those annotated with {@link EndpointDescription}, and builds an
- * in-memory index keyed by path.
+ * finds those annotated with typed endpoint annotations (e.g. {@link SearchEndpoint},
+ * {@link ReadEndpoint}), and builds an in-memory index keyed by path.
  */
 public class EndpointDescriptionCollector {
 
@@ -29,21 +29,31 @@ public class EndpointDescriptionCollector {
 
     /**
      * Iterates every registered handler method and collects those carrying
-     * {@link EndpointDescription}.
+     * typed endpoint annotations.
      */
     public void collect() {
         Map<RequestMappingInfo, HandlerMethod> methods = handlerMapping.getHandlerMethods();
 
         for (var entry : methods.entrySet()) {
             HandlerMethod handlerMethod = entry.getValue();
+            RequestMappingInfo mappingInfo = entry.getKey();
 
-            EndpointDescription annotation =
-                    handlerMethod.getMethodAnnotation(EndpointDescription.class);
-            if (annotation == null) {
+            List<Map<String, String>> extractedAttributes = new ArrayList<>();
+
+            for (Class<? extends Annotation> annoType : AnnotationMetadataExtractor.SUPPORTED_ANNOTATIONS) {
+                Annotation[] annotations = handlerMethod.getMethod().getAnnotationsByType(annoType);
+                for (Annotation annotation : annotations) {
+                    Map<String, String> attrs = AnnotationMetadataExtractor.extract(annotation);
+                    if (attrs != null) {
+                        extractedAttributes.add(attrs);
+                    }
+                }
+            }
+
+            if (extractedAttributes.isEmpty()) {
                 continue;
             }
 
-            RequestMappingInfo mappingInfo = entry.getKey();
             Set<String> patterns = mappingInfo.getPatternValues();
 
             Set<String> httpMethods = mappingInfo.getMethodsCondition()
@@ -52,12 +62,13 @@ public class EndpointDescriptionCollector {
                     .map(Enum::name)
                     .collect(Collectors.toSet());
 
-            Map<String, String> attributes = parseAttributes(annotation.value());
             String method = httpMethods.isEmpty() ? "ALL" : httpMethods.iterator().next();
 
-            for (String pattern : patterns) {
-                metadataByPath.computeIfAbsent(pattern, k -> new ArrayList<>())
-                        .add(new EndpointMetadata(method, attributes));
+            for (Map<String, String> attrs : extractedAttributes) {
+                for (String pattern : patterns) {
+                    metadataByPath.computeIfAbsent(pattern, k -> new ArrayList<>())
+                            .add(new EndpointMetadata(method, attrs));
+                }
             }
         }
     }
@@ -68,16 +79,5 @@ public class EndpointDescriptionCollector {
 
     public Map<String, List<EndpointMetadata>> getAllMetadata() {
         return Collections.unmodifiableMap(metadataByPath);
-    }
-
-    private static Map<String, String> parseAttributes(String[] pairs) {
-        Map<String, String> attrs = new LinkedHashMap<>();
-        for (String pair : pairs) {
-            int eq = pair.indexOf('=');
-            if (eq > 0) {
-                attrs.put(pair.substring(0, eq).trim(), pair.substring(eq + 1).trim());
-            }
-        }
-        return Collections.unmodifiableMap(attrs);
     }
 }

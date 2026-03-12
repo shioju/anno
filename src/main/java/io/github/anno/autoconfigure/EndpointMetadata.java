@@ -7,7 +7,7 @@ import java.util.Map;
  * Serialized directly to JSON by Jackson when returned from the anno controller.
  *
  * @param method     HTTP method (GET, POST, etc.)
- * @param attributes key-value pairs parsed from {@link EndpointDescription}
+ * @param attributes key-value pairs extracted from typed endpoint annotations
  */
 public record EndpointMetadata(
         String method,
