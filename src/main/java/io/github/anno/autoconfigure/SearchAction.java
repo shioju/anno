@@ -9,10 +9,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface CreateEndpoint {
+public @interface SearchAction {
     Condition condition() default Condition.ALWAYS;
-    String resourceId();
-    String title();
-    String category();
-    String classification();
+    String query();
+    String filters();
+    String fromDate();
+    String toDate();
 }

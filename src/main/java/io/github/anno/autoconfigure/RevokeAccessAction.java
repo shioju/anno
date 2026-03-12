@@ -9,10 +9,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface SearchEndpoint {
+public @interface RevokeAccessAction {
     Condition condition() default Condition.ALWAYS;
-    String query();
-    String filters();
-    String fromDate();
-    String toDate();
+    String resourceId();
+    String actorId();
+    String accessLevel();
 }

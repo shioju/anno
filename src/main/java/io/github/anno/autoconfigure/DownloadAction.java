@@ -9,7 +9,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface DeleteEndpoint {
+public @interface DownloadAction {
     Condition condition() default Condition.ALWAYS;
     String resourceId();
+    String fileName();
 }

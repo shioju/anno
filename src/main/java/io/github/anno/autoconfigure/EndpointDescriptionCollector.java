@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 
 /**
  * Scans all registered handler methods via {@link RequestMappingHandlerMapping},
- * finds those annotated with typed endpoint annotations (e.g. {@link SearchEndpoint},
- * {@link ReadEndpoint}), and builds an in-memory index keyed by path.
+ * finds those annotated with typed action annotations (e.g. {@link SearchAction},
+ * {@link ReadAction}), and builds an in-memory index keyed by path.
  */
 public class EndpointDescriptionCollector {
 
@@ -29,7 +29,7 @@ public class EndpointDescriptionCollector {
 
     /**
      * Iterates every registered handler method and collects those carrying
-     * typed endpoint annotations.
+     * typed action annotations.
      */
     public void collect() {
         Map<RequestMappingInfo, HandlerMethod> methods = handlerMapping.getHandlerMethods();

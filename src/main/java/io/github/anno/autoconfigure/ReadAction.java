@@ -9,8 +9,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface DownloadEndpoint {
+public @interface ReadAction {
     Condition condition() default Condition.ALWAYS;
     String resourceId();
-    String fileName();
+    String title();
+    String category();
+    String classification();
 }

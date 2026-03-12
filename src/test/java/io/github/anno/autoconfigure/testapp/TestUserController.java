@@ -1,10 +1,10 @@
 package io.github.anno.autoconfigure.testapp;
 
 import io.github.anno.autoconfigure.Condition;
-import io.github.anno.autoconfigure.CreateEndpoint;
-import io.github.anno.autoconfigure.DeleteEndpoint;
-import io.github.anno.autoconfigure.ReadEndpoint;
-import io.github.anno.autoconfigure.SearchEndpoint;
+import io.github.anno.autoconfigure.CreateAction;
+import io.github.anno.autoconfigure.DeleteAction;
+import io.github.anno.autoconfigure.ReadAction;
+import io.github.anno.autoconfigure.SearchAction;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestUserController {
 
     @GetMapping("/user")
-    @ReadEndpoint(
+    @ReadAction(
             resourceId = "currentUser",
             title = "User Profile",
             category = "users",
@@ -26,7 +26,7 @@ public class TestUserController {
     }
 
     @PostMapping("/user")
-    @CreateEndpoint(
+    @CreateAction(
             resourceId = "user",
             title = "New User",
             category = "users",
@@ -37,7 +37,7 @@ public class TestUserController {
     }
 
     @GetMapping("/user/{user_id}/project/{project_id}")
-    @ReadEndpoint(
+    @ReadAction(
             condition = Condition.IF_AVAILABLE,
             resourceId = "project",
             title = "User Project",
@@ -49,13 +49,13 @@ public class TestUserController {
     }
 
     @DeleteMapping("/user/{user_id}")
-    @DeleteEndpoint(resourceId = "user")
+    @DeleteAction(resourceId = "user")
     public String deleteUser(@PathVariable String user_id) {
         return "deleted";
     }
 
     @GetMapping("/search/users")
-    @SearchEndpoint(
+    @SearchAction(
             query = "searchTerm",
             filters = "active=true",
             fromDate = "2024-01-01",
